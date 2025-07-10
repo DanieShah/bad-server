@@ -12,6 +12,11 @@ import movingFile from '../utils/movingFile'
 const getProducts = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { page = 1, limit = 5 } = req.query
+
+        if ('status' in req.query) {
+            return new BadRequestError('Запрос содержит недопустимые символы');
+        }
+
         const options = {
             skip: (Number(page) - 1) * Number(limit),
             limit: Number(limit),

@@ -30,6 +30,11 @@ export const getOrders = async (
 
         const filters: FilterQuery<Partial<IOrder>> = {}
 
+        if ('status' in req.query) {
+            console.log('Запрос содержит потенциально опасные параметры');
+            return new BadRequestError('Запрос содержит недопустимые символы');
+        }
+
         if (status) {
             if (typeof status === 'object') {
                 Object.assign(filters, status)

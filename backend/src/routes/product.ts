@@ -12,11 +12,10 @@ import {
     validateProductUpdateBody,
 } from '../middlewares/validations'
 import { Role } from '../models/user'
-import injectionCheckMiddleware from '../middlewares/injection-check-middleware'
 
 const productRouter = Router()
 
-productRouter.get('/', injectionCheckMiddleware, getProducts)
+productRouter.get('/', getProducts)
 productRouter.post(
     '/',
     auth,
