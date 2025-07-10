@@ -12,11 +12,12 @@ import auth, { roleGuardMiddleware } from '../middlewares/auth'
 import { validateOrderBody } from '../middlewares/validations'
 import { Role } from '../models/user'
 import limitValidator from '../middlewares/limit-validator'
+import injectionCheckMiddleware from '../middlewares/injection-check-middleware'
 
 const orderRouter = Router()
 
 orderRouter.post('/', auth, validateOrderBody, createOrder)
-orderRouter.get('/all', auth, limitValidator, getOrders)
+orderRouter.get('/all', auth, limitValidator, injectionCheckMiddleware, getOrders)
 orderRouter.get('/all/me', auth, getOrdersCurrentUser)
 orderRouter.get(
     '/:orderNumber',
