@@ -1,3 +1,4 @@
+import BadRequestError from '../errors/bad-request-error';
 import { NextFunction, Request, Response } from 'express'
 
 const injectionCheckMiddleware = (req: Request, res: Response, next: NextFunction) => {
@@ -5,7 +6,7 @@ const injectionCheckMiddleware = (req: Request, res: Response, next: NextFunctio
 
     if ('status' in query) {
       console.log('Запрос содержит потенциально опасные параметры');
-      return res.status(400).send('Неверный запрос');
+      return new BadRequestError('Запрос содержит недопустимые символы');
     }
 
     next()
