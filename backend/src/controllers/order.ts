@@ -6,6 +6,11 @@ import Order, { IOrder } from '../models/order'
 import Product, { IProduct } from '../models/product'
 import User from '../models/user'
 import sanitizeHTML from 'sanitize-html'
+import {
+    isPossiblePhoneNumber,
+    isValidPhoneNumber,
+    validatePhoneNumberLength
+  } from 'libphonenumber-js'
 
 // eslint-disable-next-line max-len
 // GET /orders?page=2&limit=5&sort=totalAmount&order=desc&orderDateFrom=2024-07-01&orderDateTo=2024-08-01&status=delivering&totalAmountFrom=100&totalAmountTo=1000&search=%2B1
@@ -39,7 +44,7 @@ export const getOrders = async (
                 filters.status = status
             }
         }
-
+        // При избыточной аггрегации, уязвимой к инъекции должна быть ошибка
         if (status) {
             const prov: string = JSON.stringify(status);
             if (prov.includes('function')) {
@@ -322,9 +327,17 @@ export const createOrder = async (
             return next(new BadRequestError('Неверная сумма заказа'))
         }
 
+        // Санитизирован комментарий
         const clean = sanitizeHTML(comment, {
             allowedTags: ['b', 'img', 'div']
         })
+
+        // Уязвимость телефона
+        if (!isValidPhoneNumber(phone)) {
+            return res.status(400).json({
+                message: 'Попытка ввести недопустимые данные в телефон'
+            })
+        }
 
         const newOrder = new Order({
             totalAmount: total,
