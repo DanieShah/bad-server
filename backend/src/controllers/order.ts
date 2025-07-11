@@ -42,7 +42,9 @@ export const getOrders = async (
         if (status) {
             const prov: string = JSON.stringify(status);
             if (prov.includes('function')) {
-               return new BadRequestError('Попытка инъекции в запрос')
+               res.status(401).json({
+                message: 'Инъекция в код'
+               })
             }
         }
 
