@@ -30,17 +30,19 @@ export const getOrders = async (
 
         const filters: FilterQuery<Partial<IOrder>> = {}
 
-        if ('status' in req.query) {
-            console.log('Запрос содержит потенциально опасные параметры');
-            return new BadRequestError('Запрос содержит недопустимые символы');
-        }
-
         if (status) {
             if (typeof status === 'object') {
                 Object.assign(filters, status)
             }
             if (typeof status === 'string') {
                 filters.status = status
+            }
+        }
+
+        if (status) {
+            const prov: string = JSON.stringify(status);
+            if (prov.includes('function')) {
+               return new BadRequestError('Попытка инъекции в запрос')
             }
         }
 
@@ -160,6 +162,7 @@ export const getOrdersCurrentUser = async (
     next: NextFunction
 ) => {
     try {
+        console.log('Метод getOrdersCurrentUser')
         const userId = res.locals.user._id
         const { search, page = 1, limit = 5 } = req.query
         const options = {
@@ -235,6 +238,7 @@ export const getOrderByNumber = async (
     next: NextFunction
 ) => {
     try {
+        console.log('Метод getOrderByNumber')
         const order = await Order.findOne({
             orderNumber: req.params.orderNumber,
         })
@@ -261,6 +265,7 @@ export const getOrderCurrentUserByNumber = async (
 ) => {
     const userId = res.locals.user._id
     try {
+        console.log('Метод getOrderCurrentUserByNumber')
         const order = await Order.findOne({
             orderNumber: req.params.orderNumber,
         })
