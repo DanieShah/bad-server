@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
             join(
                 __dirname,
                 process.env.UPLOAD_PATH_TEMP
-                    ? `../public/${process.env.UPLOAD_PATH_TEMP}`
+                    ? `../public/images`
                     : '../public'
             )
         )

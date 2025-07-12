@@ -11,6 +11,7 @@ export const uploadFile = async (
         return next(new BadRequestError('Файл не загружен'))
     }
     try {
+        console.log('Проверка upload')
         const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 5)}`
         const fileName = process.env.UPLOAD_PATH
             ? `/${process.env.UPLOAD_PATH}/${uniqueFileName}`
@@ -20,6 +21,7 @@ export const uploadFile = async (
             originalName: req.file?.originalname,
         })
     } catch (error) {
+        console.log('Соси ')
         return next(error)
     }
 }
