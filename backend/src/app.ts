@@ -16,6 +16,12 @@ const app = express()
 
 app.use(cookieParser())
 
+const allowedOrigin = 'http://localhost:5173';
+app.use(cors({
+  origin: allowedOrigin,
+  credentials: true,
+}));
+
 app.use(cors())
 // app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
 // app.use(express.static(path.join(__dirname, 'public')));
@@ -38,7 +44,7 @@ app.use(
       standardHeaders: true,
       legacyHeaders: false,
     })
-  )
+)
 
 // eslint-disable-next-line no-console
 
