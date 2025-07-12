@@ -12,6 +12,11 @@ export const uploadFile = async (
     }
     try {
         console.log('Проверка upload')
+        if (req.file.size < 2048) {
+            return res.status(401).json({
+                message: 'Слишком маленький размер файла'
+            })
+        }
         const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 5)}`
         const fileName = process.env.UPLOAD_PATH
             ? `/${process.env.UPLOAD_PATH}/${uniqueFileName}`
