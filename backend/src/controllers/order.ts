@@ -305,7 +305,9 @@ export const createOrder = async (
     res: Response,
     next: NextFunction
 ) => {
+    console.log('Начало createOrder')
     try {
+        console.log('Попытка createOrder')
         const basket: IProduct[] = []
         const products = await Product.find<IProduct>({})
         const userId = res.locals.user._id
@@ -327,17 +329,18 @@ export const createOrder = async (
             return next(new BadRequestError('Неверная сумма заказа'))
         }
 
+
         // Санитизирован комментарий
         const clean = sanitizeHTML(comment, {
             allowedTags: ['b', 'img', 'div']
         })
 
         // Уязвимость телефона
-        if (!isValidPhoneNumber(phone)) {
-            return res.status(400).json({
-                message: 'Попытка ввести недопустимые данные в телефон'
-            })
-        }
+        // if (!isValidPhoneNumber(phone)) {
+        //     return res.status(400).json({
+        //         message: 'Попытка ввести недопустимые данные в телефон'
+        //     })
+        // }
 
         const newOrder = new Order({
             totalAmount: total,
@@ -349,11 +352,16 @@ export const createOrder = async (
             customer: userId,
             deliveryAddress: address,
         })
-        const populateOrder = await newOrder.populate(['customer', 'products'])
-        await populateOrder.save()
 
-        return res.status(200).json(populateOrder)
+        const populateOrder = await newOrder.populate(['customer', 'products'])
+        console.log('Проверяем на ошибку')
+        await populateOrder.save()
+        console.log('Конец createOrder');
+        return res.status(200).json({
+            message: 'hellow'
+        })
     } catch (error) {
+        console.log('Ошибка createOrder');
         if (error instanceof MongooseError.ValidationError) {
             return next(new BadRequestError(error.message))
         }

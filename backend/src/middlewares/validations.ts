@@ -2,7 +2,11 @@ import { Joi, celebrate } from 'celebrate'
 import { Types } from 'mongoose'
 
 // eslint-disable-next-line no-useless-escape
+const _ = require('lodash');
+
 export const phoneRegExp = /^(\+\d+)?(?:\s|-?|\(?\d+\)?)+$/
+export const savePhoneRegExp = _.escapeRegExp(phoneRegExp);
+export const re = new RegExp(savePhoneRegExp);
 
 export enum PaymentType {
     Card = 'card',
@@ -35,7 +39,7 @@ export const validateOrderBody = celebrate({
         email: Joi.string().email().required().messages({
             'string.empty': 'Не указан email',
         }),
-        phone: Joi.string().required().pattern(phoneRegExp).messages({
+        phone: Joi.string().required().pattern(re).messages({
             'string.empty': 'Не указан телефон',
         }),
         address: Joi.string().required().messages({
