@@ -36,6 +36,8 @@ export const getOrders = async (
 
         const filters: FilterQuery<Partial<IOrder>> = {}
 
+        console.log(req.headers)
+
         if (status) {
             if (typeof status === 'object') {
                 Object.assign(filters, status)
