@@ -23,6 +23,17 @@ app.use(cors({
     credentials: true
 }));
 
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 40,
+    message: 'Слишком много запросов с этого IP, попробуйте позже',
+    standardHeaders: true,
+    legacyHeaders: false,
+  })
+
+app.use(limiter)
+
 // app.use(cors())
 // app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
 // app.use(express.static(path.join(__dirname, 'public')));
@@ -36,16 +47,6 @@ app.options('*', cors())
 app.use(routes)
 app.use(errors())
 app.use(errorHandler)
-
-app.use(
-    rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 минут
-      max: 40,
-      message: 'Слишком много запросов с этого IP, попробуйте позже',
-      standardHeaders: true,
-      legacyHeaders: false,
-    })
-)
 
 // eslint-disable-next-line no-console
 

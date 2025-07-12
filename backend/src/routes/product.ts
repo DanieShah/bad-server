@@ -12,6 +12,7 @@ import {
     validateProductUpdateBody,
 } from '../middlewares/validations'
 import { Role } from '../models/user'
+import rateLimit from 'express-rate-limit'
 
 const productRouter = Router()
 
