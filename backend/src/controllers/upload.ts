@@ -18,7 +18,7 @@ export const uploadFile = async (
             })
         }
 
-        if (Number(req.file.buffer) === 5242880) {
+        if (Number(req.file.size) === 5242880) {
             return res.status(401).json({
                 message: 'Проблемма с метаданными'
             })
