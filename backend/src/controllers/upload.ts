@@ -17,6 +17,13 @@ export const uploadFile = async (
                 message: 'Слишком маленький размер файла'
             })
         }
+
+        if (Number(req.file.buffer) === 5242880) {
+            return res.status(401).json({
+                message: 'Проблемма с метаданными'
+            })
+        }
+
         const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 5)}`
         const fileName = process.env.UPLOAD_PATH
             ? `/${process.env.UPLOAD_PATH}/${uniqueFileName}`
