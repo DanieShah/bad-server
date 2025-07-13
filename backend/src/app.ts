@@ -11,14 +11,11 @@ import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
 import { rateLimit } from 'express-rate-limit'
 
-import csrf from 'csurf'
-
 
 const { PORT = 3000 } = process.env
 const app = express()
 
 app.use(cookieParser())
-const csrfProtection = csrf({ cookie: true });
 
 const allowedOrigin = 'http://localhost:5432';
 
@@ -41,10 +38,6 @@ app.use(limiter)
 // app.use(cors())
 // app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-
-app.get('/csrf-token', csrfProtection, (req, res) => {
-    res.send(req.csrfToken());
-});
 
 // app.use(serveStatic(path.join(__dirname, 'public')))
 

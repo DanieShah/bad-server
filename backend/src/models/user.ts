@@ -15,6 +15,7 @@ export enum Role {
 
 export interface IUser extends Document {
     name: string
+    _id: Types.ObjectId
     email: string
     password: string
     tokens: { token: string }[]
@@ -30,7 +31,7 @@ export interface IUser extends Document {
 interface IUserMethods {
     generateAccessToken(): string
     generateRefreshToken(): Promise<string>
-    toJSON(): string
+    // toJSON(): string
     calculateOrderStats(): Promise<void>
 }
 
@@ -49,6 +50,7 @@ const userSchema = new mongoose.Schema<IUser, IUserModel, IUserMethods>(
             minlength: [2, 'Минимальная длина поля "name" - 2'],
             maxlength: [30, 'Максимальная длина поля "name" - 30'],
         },
+        _id: { type: mongoose.Schema.Types.ObjectId },
         // в схеме пользователя есть обязательные email и password
         email: {
             type: String,
@@ -106,10 +108,6 @@ const userSchema = new mongoose.Schema<IUser, IUserModel, IUserMethods>(
         toJSON: {
             virtuals: true,
             transform: (_doc, ret) => {
-                delete ret.tokens
-                delete ret.password
-                delete ret._id
-                delete ret.roles
                 return ret
             },
         },
@@ -132,6 +130,7 @@ userSchema.pre('save', async function hashingPassword(next) {
 
 userSchema.methods.generateAccessToken = function generateAccessToken() {
     const user = this
+
     // Создание accessToken токена возможно в контроллере авторизации
     return jwt.sign(
         {
