@@ -17,7 +17,7 @@ import savePhone from '../middlewares/save-phone'
 const orderRouter = Router()
 
 orderRouter.post('/', savePhone, auth, validateOrderBody, createOrder)
-orderRouter.get('/all', auth, limitValidator, getOrders)
+orderRouter.get('/all', auth, roleGuardMiddleware(Role.Admin), limitValidator, getOrders)
 orderRouter.get('/all/me', auth, getOrdersCurrentUser)
 orderRouter.get(
     '/:orderNumber',
