@@ -5,6 +5,12 @@ import NotFoundError from '../errors/not-found-error'
 import Order, { IOrder } from '../models/order'
 import Product, { IProduct } from '../models/product'
 import User from '../models/user'
+import sanitizeHTML from 'sanitize-html'
+import {
+    isPossiblePhoneNumber,
+    isValidPhoneNumber,
+    validatePhoneNumberLength
+  } from 'libphonenumber-js'
 
 // eslint-disable-next-line max-len
 // GET /orders?page=2&limit=5&sort=totalAmount&order=desc&orderDateFrom=2024-07-01&orderDateTo=2024-08-01&status=delivering&totalAmountFrom=100&totalAmountTo=1000&search=%2B1
@@ -30,12 +36,23 @@ export const getOrders = async (
 
         const filters: FilterQuery<Partial<IOrder>> = {}
 
+        console.log(req.headers)
+
         if (status) {
             if (typeof status === 'object') {
                 Object.assign(filters, status)
             }
             if (typeof status === 'string') {
                 filters.status = status
+            }
+        }
+        // При избыточной аггрегации, уязвимой к инъекции должна быть ошибка
+        if (status) {
+            const prov: string = JSON.stringify(status);
+            if (prov.includes('function')) {
+               res.status(401).json({
+                message: 'Инъекция в код'
+               })
             }
         }
 
@@ -155,6 +172,7 @@ export const getOrdersCurrentUser = async (
     next: NextFunction
 ) => {
     try {
+        console.log('Метод getOrdersCurrentUser')
         const userId = res.locals.user._id
         const { search, page = 1, limit = 5 } = req.query
         const options = {
@@ -193,7 +211,7 @@ export const getOrdersCurrentUser = async (
             orders = orders.filter((order) => {
                 // eslint-disable-next-line max-len
                 const matchesProductTitle = order.products.some((product) =>
-                    productIds.some((id) => id.equals(product._id))
+                    productIds.some((id: any) => id.equals(product._id))
                 )
                 // eslint-disable-next-line max-len
                 const matchesOrderNumber =
@@ -230,6 +248,7 @@ export const getOrderByNumber = async (
     next: NextFunction
 ) => {
     try {
+        console.log('Метод getOrderByNumber')
         const order = await Order.findOne({
             orderNumber: req.params.orderNumber,
         })
@@ -256,6 +275,7 @@ export const getOrderCurrentUserByNumber = async (
 ) => {
     const userId = res.locals.user._id
     try {
+        console.log('Метод getOrderCurrentUserByNumber')
         const order = await Order.findOne({
             orderNumber: req.params.orderNumber,
         })
@@ -287,7 +307,9 @@ export const createOrder = async (
     res: Response,
     next: NextFunction
 ) => {
+    console.log('Начало createOrder')
     try {
+        console.log('Попытка createOrder')
         const basket: IProduct[] = []
         const products = await Product.find<IProduct>({})
         const userId = res.locals.user._id
@@ -295,7 +317,7 @@ export const createOrder = async (
             req.body
 
         items.forEach((id: Types.ObjectId) => {
-            const product = products.find((p) => p._id.equals(id))
+            const product = products.find((p: any) => p._id.equals(id))
             if (!product) {
                 throw new BadRequestError(`Товар с id ${id} не найден`)
             }
@@ -309,21 +331,39 @@ export const createOrder = async (
             return next(new BadRequestError('Неверная сумма заказа'))
         }
 
+
+        // Санитизирован комментарий
+        const clean = sanitizeHTML(comment, {
+            allowedTags: ['b', 'img', 'div']
+        })
+
+        // Уязвимость телефона
+        // if (!isValidPhoneNumber(phone)) {
+        //     return res.status(400).json({
+        //         message: 'Попытка ввести недопустимые данные в телефон'
+        //     })
+        // }
+
         const newOrder = new Order({
             totalAmount: total,
             products: items,
             payment,
             phone,
             email,
-            comment,
+            comment: clean,
             customer: userId,
             deliveryAddress: address,
         })
-        const populateOrder = await newOrder.populate(['customer', 'products'])
-        await populateOrder.save()
 
-        return res.status(200).json(populateOrder)
+        const populateOrder = await newOrder.populate(['customer', 'products'])
+        console.log('Проверяем на ошибку')
+        await populateOrder.save()
+        console.log('Конец createOrder');
+        return res.status(200).json({
+            message: 'hellow'
+        })
     } catch (error) {
+        console.log('Ошибка createOrder');
         if (error instanceof MongooseError.ValidationError) {
             return next(new BadRequestError(error.message))
         }

@@ -30,7 +30,7 @@ export interface IUser extends Document {
 interface IUserMethods {
     generateAccessToken(): string
     generateRefreshToken(): Promise<string>
-    toJSON(): string
+    // toJSON(): string
     calculateOrderStats(): Promise<void>
 }
 
@@ -106,10 +106,6 @@ const userSchema = new mongoose.Schema<IUser, IUserModel, IUserMethods>(
         toJSON: {
             virtuals: true,
             transform: (_doc, ret) => {
-                delete ret.tokens
-                delete ret.password
-                delete ret._id
-                delete ret.roles
                 return ret
             },
         },
@@ -132,10 +128,12 @@ userSchema.pre('save', async function hashingPassword(next) {
 
 userSchema.methods.generateAccessToken = function generateAccessToken() {
     const user = this
+    const prov = String(user._id)
+
     // Создание accessToken токена возможно в контроллере авторизации
     return jwt.sign(
         {
-            _id: user._id.toString(),
+            _id: prov.toString(),
             email: user.email,
         },
         ACCESS_TOKEN.secret,
@@ -149,10 +147,11 @@ userSchema.methods.generateAccessToken = function generateAccessToken() {
 userSchema.methods.generateRefreshToken =
     async function generateRefreshToken() {
         const user = this
+        const prov = String(user._id)
         // Создание refresh токена возможно в контроллере авторизации/регистрации
         const refreshToken = jwt.sign(
             {
-                _id: user._id.toString(),
+                _id: prov.toString(),
             },
             REFRESH_TOKEN.secret,
             {
